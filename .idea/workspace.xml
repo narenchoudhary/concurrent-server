@@ -12,11 +12,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d2c0fd2a-9a09-4e79-bb06-794d35f84d6c" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/echoClient" afterPath="$PROJECT_DIR$/echoClient" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server" afterPath="$PROJECT_DIR$/server" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/concurrent-server.iml" afterPath="$PROJECT_DIR$/.idea/concurrent-server.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/echoClient.c" afterPath="$PROJECT_DIR$/echoClient.c" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.c" afterPath="$PROJECT_DIR$/server.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test.c" afterPath="$PROJECT_DIR$/test.c" />
     </list>
     <ignored path="concurrent-server.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -40,28 +41,20 @@
       <file leaf-file-name="server.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.2079832">
-              <caret line="124" column="1" selection-start-line="124" selection-start-column="1" selection-end-line="124" selection-end-column="1" />
+            <state vertical-scroll-proportion="0.34453782">
+              <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#825#2179#0" expanded="false" />
-                <element signature="e#2181#3036#0" expanded="false" />
-                <element signature="e#3038#3275#0" expanded="false" />
-                <element signature="e#3277#8964#0" expanded="false" />
-                <element signature="e#8966#11205#0" expanded="false" />
-                <element signature="e#11459#14730#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="demo.c" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/demo.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="12" column="55" selection-start-line="12" selection-start-column="55" selection-end-line="12" selection-end-column="55" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#687#906#0" expanded="false" />
+                <element signature="e#687#2259#0" expanded="false" />
+                <element signature="e#2261#2456#0" expanded="false" />
+                <element signature="e#2261#3328#0" expanded="false" />
+                <element signature="e#3330#3761#0" expanded="false" />
+                <element signature="e#3330#10748#0" expanded="false" />
+                <element signature="e#10750#10955#0" expanded="false" />
+                <element signature="e#10750#13365#0" expanded="false" />
+                <element signature="e#13367#13617#0" expanded="false" />
+                <element signature="e#13619#16890#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -81,9 +74,11 @@
         <entry file="file://$PROJECT_DIR$/test.c">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
+              <caret line="72" column="49" selection-start-line="72" selection-start-column="49" selection-end-line="72" selection-end-column="49" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#295#1052#0" expanded="false" />
+                <element signature="e#1054#1540#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -93,13 +88,12 @@
         <entry file="file://$PROJECT_DIR$/echoClient.c">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="294" column="54" selection-start-line="294" selection-start-column="54" selection-end-line="294" selection-end-column="54" />
+              <caret line="97" column="0" selection-start-line="97" selection-start-column="0" selection-end-line="97" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#508#1611#0" expanded="false" />
-                <element signature="e#1613#2471#0" expanded="false" />
-                <element signature="e#2473#4687#0" expanded="false" />
-                <element signature="e#4689#7633#0" expanded="false" />
+                <element signature="e#508#1606#0" expanded="false" />
+                <element signature="e#1608#2502#0" expanded="false" />
+                <element signature="e#2504#4846#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -113,16 +107,16 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test.c" />
         <option value="$PROJECT_DIR$/testclient.c.cpp" />
         <option value="$PROJECT_DIR$/testserver.c.cpp" />
         <option value="$PROJECT_DIR$/userver.c" />
         <option value="$PROJECT_DIR$/uclient.c" />
         <option value="$PROJECT_DIR$/testclient.c" />
         <option value="$PROJECT_DIR$/testserver.c" />
-        <option value="$PROJECT_DIR$/echoClient.c" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/demo.c" />
+        <option value="$PROJECT_DIR$/test.c" />
+        <option value="$PROJECT_DIR$/echoClient.c" />
         <option value="$PROJECT_DIR$/server.c" />
       </list>
     </option>
@@ -134,9 +128,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="65" />
-    <option name="y" value="-4" />
+    <option name="y" value="24" />
     <option name="width" value="1855" />
-    <option name="height" value="1084" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -262,7 +256,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14285715" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -298,7 +292,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="2" />
+      <option name="time" value="3" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -306,51 +300,19 @@
     <entry file="file://$PROJECT_DIR$/server.c">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="162" column="26" selection-start-line="162" selection-start-column="26" selection-end-line="162" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#825#2179#0" expanded="false" />
-            <element signature="e#2181#3036#0" expanded="false" />
-            <element signature="e#3038#3275#0" expanded="false" />
-            <element signature="e#3277#8964#0" expanded="false" />
-            <element signature="e#8966#11205#0" expanded="false" />
-            <element signature="e#11459#14730#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/echoClient.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#508#1611#0" expanded="false" />
-            <element signature="e#1613#2471#0" expanded="false" />
-            <element signature="e#2473#4687#0" expanded="false" />
-            <element signature="e#4689#7633#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/echoClient.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="294" column="54" selection-start-line="294" selection-start-column="54" selection-end-line="294" selection-end-column="54" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#508#1611#0" expanded="false" />
-            <element signature="e#1613#2471#0" expanded="false" />
-            <element signature="e#2473#4687#0" expanded="false" />
-            <element signature="e#4689#7633#0" expanded="false" />
+            <element signature="e#687#906#0" expanded="false" />
+            <element signature="e#687#2259#0" expanded="false" />
+            <element signature="e#2261#2456#0" expanded="false" />
+            <element signature="e#2261#3328#0" expanded="false" />
+            <element signature="e#3330#3761#0" expanded="false" />
+            <element signature="e#3330#10748#0" expanded="false" />
+            <element signature="e#10750#10955#0" expanded="false" />
+            <element signature="e#10750#13365#0" expanded="false" />
+            <element signature="e#13367#13617#0" expanded="false" />
+            <element signature="e#13619#16890#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -363,38 +325,149 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/demo.c">
+    <entry file="file://$PROJECT_DIR$/test.c">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="55" selection-start-line="12" selection-start-column="55" selection-end-line="12" selection-end-column="55" />
+          <caret line="72" column="49" selection-start-line="72" selection-start-column="49" selection-end-line="72" selection-end-column="49" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#295#1052#0" expanded="false" />
+            <element signature="e#1054#1540#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.c">
+    <entry file="file://$PROJECT_DIR$/echoClient.c">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
+          <caret line="199" column="13" selection-start-line="199" selection-start-column="13" selection-end-line="199" selection-end-column="13" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#508#1606#0" expanded="false" />
+            <element signature="e#1608#2502#0" expanded="false" />
+            <element signature="e#2504#4846#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2079832">
-          <caret line="124" column="1" selection-start-line="124" selection-start-column="1" selection-end-line="124" selection-end-column="1" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#825#2179#0" expanded="false" />
-            <element signature="e#2181#3036#0" expanded="false" />
-            <element signature="e#3038#3275#0" expanded="false" />
-            <element signature="e#3277#8964#0" expanded="false" />
-            <element signature="e#8966#11205#0" expanded="false" />
-            <element signature="e#11459#14730#0" expanded="false" />
+            <element signature="e#687#906#0" expanded="false" />
+            <element signature="e#687#2259#0" expanded="false" />
+            <element signature="e#2261#2456#0" expanded="false" />
+            <element signature="e#2261#3328#0" expanded="false" />
+            <element signature="e#3330#3761#0" expanded="false" />
+            <element signature="e#3330#10748#0" expanded="false" />
+            <element signature="e#10750#10955#0" expanded="false" />
+            <element signature="e#10750#13365#0" expanded="false" />
+            <element signature="e#13367#13617#0" expanded="false" />
+            <element signature="e#13619#16890#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="162" column="26" selection-start-line="162" selection-start-column="26" selection-end-line="162" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#687#906#0" expanded="false" />
+            <element signature="e#687#2259#0" expanded="false" />
+            <element signature="e#2261#2456#0" expanded="false" />
+            <element signature="e#2261#3328#0" expanded="false" />
+            <element signature="e#3330#3761#0" expanded="false" />
+            <element signature="e#3330#10748#0" expanded="false" />
+            <element signature="e#10750#10955#0" expanded="false" />
+            <element signature="e#10750#13365#0" expanded="false" />
+            <element signature="e#13367#13617#0" expanded="false" />
+            <element signature="e#13619#16890#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/echoClient.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#508#1606#0" expanded="false" />
+            <element signature="e#1608#2502#0" expanded="false" />
+            <element signature="e#2504#4846#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="72" column="49" selection-start-line="72" selection-start-column="49" selection-end-line="72" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#295#1052#0" expanded="false" />
+            <element signature="e#1054#1540#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/echoClient.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="97" column="0" selection-start-line="97" selection-start-column="0" selection-end-line="97" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#508#1606#0" expanded="false" />
+            <element signature="e#1608#2502#0" expanded="false" />
+            <element signature="e#2504#4846#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.34453782">
+          <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#687#906#0" expanded="false" />
+            <element signature="e#687#2259#0" expanded="false" />
+            <element signature="e#2261#2456#0" expanded="false" />
+            <element signature="e#2261#3328#0" expanded="false" />
+            <element signature="e#3330#3761#0" expanded="false" />
+            <element signature="e#3330#10748#0" expanded="false" />
+            <element signature="e#10750#10955#0" expanded="false" />
+            <element signature="e#10750#13365#0" expanded="false" />
+            <element signature="e#13367#13617#0" expanded="false" />
+            <element signature="e#13619#16890#0" expanded="false" />
           </folding>
         </state>
       </provider>
