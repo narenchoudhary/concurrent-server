@@ -11,6 +11,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+
 #define LISTENQ 8
 #define ERROR -1
 #define MAXCLIENTS 10
@@ -24,8 +29,10 @@ uint16_t  *change_msg_type(uint16_t *msg, uint16_t new_type);
 void connection_handler(uint16_t port);
 uint16_t udp_handler(uint16_t port);
 
-uint16_t ports[10] = {3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011};
+
+uint16_t ports[10] = {3002,3003,3004,3005,3006,3007,3008,3009,3010,3011};
 uint16_t ports_occupied[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 
 uint16_t * encode_msg(uint16_t type, char *input){
     size_t msg_len;
@@ -117,39 +124,6 @@ char *decode_msg(uint16_t *encoded_msg){
     return ret_str;
 }
 
-uint16_t get_port(int active_clients){
-    uint16_t i;
-    uint16_t port;
-    if(active_clients < MAXCLIENTS){
-        for(i = 0; i < MAXCLIENTS; i++){
-            if(ports_occupied[i] == 0){
-                ports_occupied[i] = 1;
-                port = ports[i];
-                break;
-            }
-        }
-    }else{
-        printf("error:No free ports\n");
-    }
-
-    printf("Port1: %u\n", port);
-    printf("Present port situation:");
-    for(i = 0; i < 10; i++){
-        printf("%u,", ports_occupied[i]);
-    }
-    printf("\n");
-    return port;
-}
-
-void free_port(uint16_t port){
-    uint16_t i;
-    for(i = 0; i < MAXCLIENTS; i++){
-        if(ports[i] == port){
-            ports_occupied[i] = 0;
-        }
-    }
-}
-
 uint16_t  *change_msg_type(uint16_t *msg, uint16_t new_type){
     uint16_t *msg_copy = malloc(sizeof(uint16_t)*(MAX_LEN+2));
     memcpy(msg_copy, msg_copy, sizeof(uint16_t)*(MAX_LEN+2));
@@ -158,6 +132,37 @@ uint16_t  *change_msg_type(uint16_t *msg, uint16_t new_type){
 }
 
 void connection_handler(uint16_t port){
+    /* chared memory things */
+
+    uint16_t *all_ports = mmap(NULL, 10 * sizeof(uint16_t), PROT_READ | PROT_WRITE,
+                                MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    all_ports[0] = 3002;
+    all_ports[1] = 3003;
+    all_ports[2] = 3004;
+    all_ports[3] = 3005;
+    all_ports[4] = 3006;
+    all_ports[5] = 3007;
+    all_ports[6] = 3008;
+    all_ports[7] = 3009;
+    all_ports[8] = 3010;
+    all_ports[9] = 3011;
+
+
+    uint16_t *all_free = mmap(NULL, 10*sizeof(uint16_t), PROT_READ | PROT_WRITE,
+                              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    all_free[0] = 0;
+    all_free[1] = 0;
+    all_free[2] = 0;
+    all_free[3] = 0;
+    all_free[4] = 0;
+    all_free[5] = 0;
+    all_free[6] = 0;
+    all_free[7] = 0;
+    all_free[8] = 0;
+    all_free[9] = 0;
+
     int listen_fd, con_fd, setlisten_fd, true_int;
 
     pid_t childpid;
@@ -191,7 +196,7 @@ void connection_handler(uint16_t port){
     bzero(&servaddr.sin_zero, 8);
 
     if(bind (listen_fd, (struct sockaddr *) &servaddr, sockaddr_len) == ERROR){
-        perror("bind");
+        perror("tcp bind");
         exit(-1);
     }
 
@@ -227,14 +232,15 @@ void connection_handler(uint16_t port){
 
             ssize_t data_len = 1;
 
-
             while(data_len){
+
+                int i;
 
                 size_t input_size = (MAX_LEN+2)*sizeof(uint16_t);
 
                 data_len = recv(con_fd, data, input_size, 0);
 
-                uint16_t i = 0;
+
                 printf("Input Size calculated:%zu\n", input_size);
                 printf("Number of bytes read:%zu\n", data_len);
                 printf("Encoded message is:");
@@ -257,7 +263,24 @@ void connection_handler(uint16_t port){
 
                     char portstring[MAX_LEN];
 
-                    uint16_t udpport = get_port(6);
+
+                    /* get port logic */
+                    uint16_t port_yes = -1;
+                    uint16_t udpport;
+                    for(i = 0; i < MAXCLIENTS; i++){
+                        if(all_free[i] == 0){
+                            all_free[i] = 1;
+                            udpport = all_ports[i];
+                            port_yes = 1;
+                            break;
+                        }
+                    }
+                    if(port_yes == ERROR){
+                        perror("no free udp port");
+                        exit(-1);
+                    }
+                    /* free port logic ends */
+
                     printf("Port gen is:%u\n", udpport);
                     sprintf(portstring, "%u", udpport);
 
@@ -267,7 +290,18 @@ void connection_handler(uint16_t port){
 
                     uint16_t freeport = udp_handler(udpport);
 
-                    free_port(freeport);
+                    /* free port logic starts */
+                    for(i = 0; i < MAXCLIENTS; i++){
+                        if(all_ports[i] == freeport){
+                            if(all_free[i] == 1){
+                                all_free[i] = 0;
+                            }else{
+                                perror("udp port was already free.");
+                                exit(-1);
+                            }
+                        }
+                    }
+                    /*free port logic ends */
 
                     close_connection = 1;
                     break;
@@ -284,7 +318,7 @@ void connection_handler(uint16_t port){
                 close(con_fd);
             }
             if(close_connection == 1){
-                break;
+                exit(EXIT_SUCCESS);
             }
         }
     }
@@ -313,7 +347,7 @@ uint16_t udp_handler(uint16_t port){
     bzero(&servaddr.sin_zero, 8);
 
     if(bind(sock_fd, (struct sockaddr *)&servaddr, sockaddr_len) == ERROR){
-        perror("bind");
+        perror("udp bind");
         exit(0);
     }
 
@@ -387,6 +421,7 @@ int main2(int argc, char **argv){
 
     char input[MAX_LEN];
 
+    /*
     fgets(input, MAX_LEN, stdin);
 
     input[strcspn(input, "\n")] = 0;
@@ -404,6 +439,62 @@ int main2(int argc, char **argv){
     printf("%s\n", in_clone);
     printf("%s\n", re_clone);
 
+    */
+
+    uint16_t *all_ports2 = mmap(NULL, 10 * sizeof(uint16_t), PROT_READ | PROT_WRITE,
+                                MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    all_ports2[0] = 3002;
+    all_ports2[1] = 3003;
+    all_ports2[2] = 3004;
+    all_ports2[3] = 3005;
+    all_ports2[4] = 3006;
+    all_ports2[5] = 3007;
+    all_ports2[6] = 3008;
+    all_ports2[7] = 3009;
+    all_ports2[8] = 3010;
+    all_ports2[9] = 3011;
+
+
+    uint16_t *all_free = mmap(NULL, 10*sizeof(uint16_t), PROT_READ | PROT_WRITE,
+                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    all_free[0] = 0;
+    all_free[0] = 1;
+    all_free[0] = 2;
+    all_free[0] = 3;
+    all_free[0] = 4;
+    all_free[0] = 5;
+    all_free[0] = 6;
+    all_free[0] = 7;
+    all_free[0] = 8;
+    all_free[0] = 9;
+
+
+    if(fork() == 0){
+
+        int i = 0;
+        for(i = 0; i < 10; i++){
+            if(all_ports2[i] == 3002){
+                all_free[i] = 1;
+            }
+        }
+        printf("Present port situation:");
+        for(i = 0; i < 10; i++){
+            printf("%u,", all_free[i]);
+        }
+        printf("\n");
+        exit(EXIT_SUCCESS);
+    }else{
+        wait(NULL);
+        int i = 0;
+        printf("Present port situation:");
+        for(i = 0; i < 10; i++){
+            printf("%u,", all_free[i]);
+        }
+        printf("\n");
+
+    }
     /*
     uint16_t change[MAX_LEN+2];
     strcpy(change, change_msg_type(1, encode_msg(1, input)));
