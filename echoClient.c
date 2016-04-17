@@ -16,6 +16,8 @@ uint16_t * encode_msgC(uint16_t type, char *input);
 char *decode_msgC(uint16_t *encoded_msg);
 void tcp_handlerC(char *address, uint16_t port);
 void udp_handlerC(char *address, uint16_t port);
+void small_tcp_handlerC(char *address, uint16_t port);
+void small_udp_handlerC(char *address, uint16_t port);
 int main2C(int argc, char **argv);
 
 uint16_t * encode_msgC(uint16_t type, char *input) {
@@ -281,10 +283,9 @@ int main(int argc, char **argv) {
     }
 
     tcp_handlerC(argv[1], (uint16_t)(atoi(argv[2])));
-//    udp_handler(argv[1], (uint16_t)(atoi(argv[2])));
 
     printf("Client program has closed.\n");
-    exit(0);
+    return 0;
 }
 
 int main2C(int argc, char **argv){
@@ -300,4 +301,132 @@ int main2C(int argc, char **argv){
     printf("Original string is:%s\n", in_clone);
 
     return 0;
+}
+
+
+void small_tcp_handlerC(char *address, uint16_t port) {
+
+    int sock_fd = socket (AF_INET, SOCK_STREAM, 0);
+    if (sock_fd < 0) {
+        perror("Problem in creating the socket");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in servaddr;
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr= inet_addr(address);
+    servaddr.sin_port =  htons(port);
+
+    if (connect(sock_fd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
+        perror("Problem in connecting to the server");
+        exit(EXIT_FAILURE);
+    }
+
+    char input[MAX_LEN];
+
+    printf("Encoding client request(Message1)!\n");
+    uint16_t *encoded_msg = encode_msgC(1, "getport");
+
+    size_t input_size = sizeof(uint16_t)*(MAX_LEN+2);
+
+    ssize_t bytes_sent = send(sock_fd, encoded_msg, input_size, 0);
+
+    if(bytes_sent < 0){
+        perror("send");
+        exit(EXIT_FAILURE);
+    }
+
+    uint16_t output[MAX_LEN+2];
+    ssize_t bytes_received = recv(sock_fd, output, input_size, 0);
+
+    if(bytes_received > 0){
+        printf("\nServer response received!\n");
+
+        char *decoded_resp = decode_msgC(output);
+
+        printf("Port returned by server is: %u\n", atoi(decoded_resp));
+        close(sock_fd);
+        printf("TCP connection closed.\n");
+        small_udp_handlerC(address, (uint16_t)atoi(decoded_resp));
+        printf("UDP closed.\n");
+    }
+    else if(bytes_received < 0){
+        perror("read");
+        exit(EXIT_FAILURE);
+    }
+    else if (bytes_received == 0){
+        printf("The server terminated prematurely.\n");
+        close(sock_fd);
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
+
+void small_udp_handlerC(char *address, uint16_t port){
+
+    int sock_fd;
+    struct sockaddr_in servaddr;
+    socklen_t sockaddr_len = sizeof(struct sockaddr);
+
+    char input[MAX_LEN];
+    uint16_t output[MAX_LEN+2];
+
+    if ((sock_fd = socket (AF_INET, SOCK_DGRAM, 0)) <0 ) {
+        perror("Problem in creating the socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr= inet_addr(address);
+    servaddr.sin_port =  htons(port);
+    memset(&(servaddr.sin_zero), 0, sizeof(servaddr));
+
+    printf("\nStart Phase2\n");
+    printf("Encoding client request (Message3)!\n");
+    uint16_t *encoded_msg = encode_msgC(3, "quitudp");
+
+    printf("Message sent to server is:%s\n", "quitudp");
+
+    size_t input_size = sizeof(uint16_t)*(MAX_LEN+2);
+
+    ssize_t bytes_sent = sendto(sock_fd, encoded_msg, input_size, 0, (struct sockaddr *)&servaddr,
+                                sizeof(struct sockaddr));
+
+    if(bytes_sent > 0){
+        //printf("Bytes sent:%zu\n",bytes_sent);
+    }else if(bytes_sent < 0){
+        perror("sendto");
+        exit(EXIT_FAILURE);
+    }else if(bytes_sent == 0){
+        printf("Zero bytes sent.\n");
+        printf("It is probably because client closed the connection prematurely.\n");
+        printf("Connection closed by server.\n");
+        close(sock_fd);
+        exit(EXIT_SUCCESS);
+    }
+
+    socklen_t size_of = sizeof(struct sockaddr);
+    ssize_t bytes_received = recvfrom(sock_fd, output, input_size, 0, (struct sockaddr *)&servaddr,
+                                      &size_of);
+
+    if(bytes_received > 0){
+        printf("\nSever response (Message 4) received!\n");
+        printf("Decoding server response.\n");
+        char *decoded_msg = decode_msgC(output);
+        printf("Message received from server is:%s\n", decoded_msg);
+        close(sock_fd);
+    }
+    else if(bytes_received < 0){
+        perror("read");
+        close(sock_fd);
+        exit(EXIT_FAILURE);
+    }
+    else if (bytes_received == 0){
+        perror("The server probably has closed. No communication possible.\n");
+        close(sock_fd);
+        exit(EXIT_FAILURE);
+    }
+    return;
 }
