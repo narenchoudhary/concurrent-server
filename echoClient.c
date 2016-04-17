@@ -177,7 +177,7 @@ void tcp_handlerC(char *address, uint16_t port) {
             exit(EXIT_FAILURE);
         }
         else if (bytes_received == 0){
-            printf("The server terminated prematurely");
+            printf("The server terminated prematurely.\n");
             close(sock_fd);
             exit(EXIT_FAILURE);
         }
