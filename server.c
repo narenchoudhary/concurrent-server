@@ -21,13 +21,13 @@
 #define MAXCLIENTS 10
 #define MAX_LEN 16
 
-uint16_t * encode_msg(uint16_t type, char *input);
-char *decode_msg(uint16_t *encoded_msg);
+uint16_t * encode_msgS(uint16_t type, char *input);
+char *decode_msgS(uint16_t *encoded_msg);
 uint16_t get_port(int active_clients);
 void free_port(uint16_t port);
 uint16_t  *change_msg_type(uint16_t *msg, uint16_t new_type);
-void connection_handler(uint16_t port);
-uint16_t udp_handler(uint16_t port);
+void tcp_handlerS(uint16_t port);
+uint16_t udp_handlerS(uint16_t port);
 
 
 /****************************
@@ -36,7 +36,7 @@ uint16_t udp_handler(uint16_t port);
  * Convert type-length-string into an encoded uint16_t array
  * Returns encoded array
  ***************************/
-uint16_t * encode_msg(uint16_t type, char *input){
+uint16_t * encode_msgS(uint16_t type, char *input){
     size_t in_len;
 
     uint16_t *msg_full = (uint16_t *) malloc(sizeof(uint16_t) * (MAX_LEN + 2));
@@ -103,7 +103,7 @@ uint16_t * encode_msg(uint16_t type, char *input){
  * Prints message type and message length.
  * Returns decoded message string.
  ***************************/
-char *decode_msg(uint16_t *encoded_msg){
+char *decode_msgS(uint16_t *encoded_msg){
     char *ret_str = malloc(sizeof(char) * MAX_LEN);
 
     int i = 0;
@@ -141,13 +141,13 @@ char *decode_msg(uint16_t *encoded_msg){
  * Select free port client messages "getport".
  * Sends port for udp connection to client.
  * Closes TCP connection.
- * Hands over control to udp_handler()
- * Frees port when udp_handler() returns
+ * Hands over control to udp_handlerS()
+ * Frees port when udp_handlerS() returns
  * Terminates connection with client
  * Waits for new connections
  ***************************/
-void connection_handler(uint16_t port){
-    /* schared memory things */
+void tcp_handlerS(uint16_t port){
+    /* shared memory things */
 
     uint16_t *all_ports = mmap(NULL, 10 * sizeof(uint16_t), PROT_READ | PROT_WRITE,
                                 MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -183,6 +183,8 @@ void connection_handler(uint16_t port){
 
     *active_clients = 0;
 
+    /* here ends all shared memeory code */
+
     int listen_fd, con_fd, setlisten_fd, true_int;
 
     pid_t childpid;
@@ -193,35 +195,36 @@ void connection_handler(uint16_t port){
 
     struct sockaddr_in servaddr;
     struct sockaddr_in cliaddr;
-    int sockaddr_len = sizeof(struct sockaddr);
+    socklen_t sockaddr_len = sizeof(struct sockaddr);
 
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if(listen_fd == ERROR){
         perror("socket");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
+    /* to avoid connection from getting stuck in TIME_WAIT state */
     true_int = 1;
     setlisten_fd = setsockopt(listen_fd,SOL_SOCKET,SO_REUSEADDR,&true_int,sizeof(int));
     if(setlisten_fd == ERROR){
         perror("setsockopt");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
+    memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
-    bzero(&servaddr.sin_zero, 8);
 
     if(bind (listen_fd, (struct sockaddr *) &servaddr, sockaddr_len) == ERROR){
         perror("tcp bind");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     if(listen (listen_fd, LISTENQ) == ERROR){
         perror("listen");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     printf("%s\n","Server started!");
@@ -230,26 +233,33 @@ void connection_handler(uint16_t port){
 
         con_fd = accept(listen_fd, (struct sockaddr *) &cliaddr, &sockaddr_len);
 
+
         if(con_fd == ERROR){
             printf("Error while accepting the connection\n");
             close(con_fd);
-            exit(-1);
+            continue;
         }
 
-        *active_clients += 1;
         printf("%s\n","Received request...");
 
+        /* create child process to handle new client requests */
         if ( (childpid = fork ()) == 0 ) {
             printf ("%s\n","Child process created for new client requests\n");
-            // close listening socket
+            printf("Total client count: %d\n", *active_clients);
+            /* close listening socket copy in child process */
+            /* Do not shutdown listen_fd */
+            /* This closes listen_fd in child process and */
+            /* listen_fd is still open in parent process */
             close (listen_fd);
 
             ssize_t data_len = 1;
+            int close_connection = 0;
+
+            *active_clients += 1;
 
             while(data_len){
 
                 int i;
-                int close_connection = 0;
 
                 size_t input_size = (MAX_LEN+2)*sizeof(uint16_t);
 
@@ -264,16 +274,20 @@ void connection_handler(uint16_t port){
                 }
                 printf("\n");
                 */
-                char *decoded_req = decode_msg(data);
+                char *decoded_req = decode_msgS(data);
                 printf("Message received from client is:%s\n", decoded_req);
 
+                /* check if client requested port for UDP connection */
                 int startudp = strcmp(decoded_req, "getport");
 
+
                 if(startudp != 0){
-                    /* change the message type
+                    /*
+                     * Message type #2: TCP Response.
+                     * Change the message type to 2
                      * and echo back the string */
                     uint16_t *poststring;
-                    poststring = encode_msg(2, decoded_req);
+                    poststring = encode_msgS(2, decoded_req);
                     //poststring = change_msg_type(data, 2);
                     ssize_t bytes_sent = send(con_fd, poststring, input_size, 0);
                     //send(con_fd, data, input_size, 0);
@@ -283,8 +297,7 @@ void connection_handler(uint16_t port){
                     /* if udp-port is requested
                      * get an unsed port
                      * send port to client
-                     * handover control to udp_handler() */
-
+                     * handover control to udp_handlerS() */
                     printf("UDP port requested by client!\n");
 
                     /* get port logic */
@@ -298,28 +311,36 @@ void connection_handler(uint16_t port){
                             break;
                         }
                     }
+                    /* extra check */
+                    /* most probably it won't be exectuted ever */
                     if(port_yes == ERROR){
                         perror("no free udp port");
-                        exit(-1);
+                        exit(EXIT_FAILURE);
                     }
-                    /* free port logic ends */
+                    /* get port logic ends */
 
                     char portstring[MAX_LEN];
                     printf("Port assigned to this client is:%u\n", udpport);
                     sprintf(portstring, "%u", udpport);
 
-                    uint16_t *encoded_resp = encode_msg(2, portstring);
+                    uint16_t *encoded_resp = encode_msgS(2, portstring);
                     ssize_t bytes_sent = send(con_fd, encoded_resp, input_size, 0);
+                    if(bytes_sent < 0){
+                        perror("Bytes sent error:");
+                        close(con_fd);
+                        exit(EXIT_FAILURE);
+                    }
                     //printf("Bytes resent are: %zu\n", bytes_sent);
 
-                    //TODO:Check
+                    //Close the TCP connection
                     close(con_fd);
 
                     printf("Phase2 starts now:\n");
-                    uint16_t freeport = udp_handler(udpport);
+                    uint16_t freeport = udp_handlerS(udpport);
                     printf("Port returned is:%u\n", port);
 
                     int if_freed = 0;
+
                     /* free port logic starts */
                     for(i = 0; i < MAXCLIENTS; i++){
                         if(all_ports[i] == freeport){
@@ -327,16 +348,19 @@ void connection_handler(uint16_t port){
                                 all_free[i] = 0;
                                 if_freed = 1;
                             }else{
-                                perror("udp port was already free.");
-                                exit(-1);
+                                printf("udp port was already free.");
+                                printf("Something is wrong!");
                             }
                         }
                     }
                     if(if_freed == 1){
                         printf("Connection closed with client with port:%u\n", freeport);
-                        printf("Port %u is free now.\n", freeport);
+                        printf("Port %u is FREE now.\n", freeport);
+
+                        *active_clients -= 1;
+
                     }else{
-                        printf("No port freed.\n");
+                        printf("No port freed. Error ignored silently.\n");
                     }
 
                     /*free port logic ends */
@@ -347,7 +371,7 @@ void connection_handler(uint16_t port){
 
             if(data_len == ERROR){
                 perror("read error");
-                exit(-1);
+                exit(EXIT_FAILURE);
             }
             if(data_len == 0){
                 printf("No data read.\n");
@@ -356,8 +380,12 @@ void connection_handler(uint16_t port){
             }
 
             if(close_connection == 1){
-                exit(EXIT_SUCCESS);
+                printf("Closing connection.\n");
+                close(con_fd);
             }
+
+            /* exit child process */
+            exit(EXIT_SUCCESS);
         }
 
     }
@@ -371,7 +399,7 @@ void connection_handler(uint16_t port){
  * Echos back same message
  * Closes socket when client messages "quitudp"
  ****************************/
-uint16_t udp_handler(uint16_t port){
+uint16_t udp_handlerS(uint16_t port){
     int sock_fd;
 
     uint16_t data[MAX_LEN+2];
@@ -385,7 +413,7 @@ uint16_t udp_handler(uint16_t port){
 
     if(sock_fd == ERROR){
         perror("socket");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     servaddr.sin_family = AF_INET;
@@ -395,7 +423,7 @@ uint16_t udp_handler(uint16_t port){
 
     if(bind(sock_fd, (struct sockaddr *)&servaddr, sockaddr_len) == ERROR){
         perror("udp bind");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     while(1){
@@ -405,7 +433,7 @@ uint16_t udp_handler(uint16_t port){
                                            (struct sockaddr *)&cliaddr, &sockaddr_len);
         if(encoded_udp_req == ERROR){
             perror("recvfrom");
-            exit(0);
+            exit(EXIT_FAILURE);
         }
 
         uint16_t i = 0;
@@ -419,12 +447,12 @@ uint16_t udp_handler(uint16_t port){
         }
         printf("\n");
         */
-        char *decoded_req = decode_msg(data);
+        char *decoded_req = decode_msgS(data);
         printf("Message received from client is:%s\n", decoded_req);
 
         /* changing message type to 4*/
         uint16_t *poststing;
-        poststing = encode_msg(4, decoded_req);
+        poststing = encode_msgS(4, decoded_req);
 
         ssize_t udp_resp = sendto(sock_fd, poststing, input_size, 0, (struct sockaddr *)&cliaddr,
                                   sockaddr_len);
@@ -460,12 +488,12 @@ uint16_t main(uint16_t argc, char **argv){
       exit(1);
     }
 
-    connection_handler((uint16_t)atoi(argv[1]));
-//    udp_handler((uint16_t)atoi(argv[1]));
+    tcp_handlerS((uint16_t)atoi(argv[1]));
 
     return 0;
 }
 
+/* test function */
 int main2(int argc, char **argv){
 
     char input[MAX_LEN];
@@ -477,11 +505,11 @@ int main2(int argc, char **argv){
 
     printf("String entered is:%s\n",input);
 
-    uint16_t *enc = encode_msg(1, input);
-    char *in_clone = decode_msg(enc);
+    uint16_t *enc = encode_msgS(1, input);
+    char *in_clone = decode_msgS(enc);
 
-    uint16_t *reenc = encode_msg(4, input);
-    char *re_clone = decode_msg(reenc);
+    uint16_t *reenc = encode_msgS(4, input);
+    char *re_clone = decode_msgS(reenc);
 
     printf("Comparison is:%d\n", strcmp(in_clone, "getport"));
 
@@ -546,8 +574,8 @@ int main2(int argc, char **argv){
     }
     /*
     uint16_t change[MAX_LEN+2];
-    strcpy(change, change_msg_type(1, encode_msg(1, input)));
-    uint16_t *change2 = change_msg_type((uint16_t *) 4, (uint16_t) encode_msg(1, input));
+    strcpy(change, change_msg_type(1, encode_msgS(1, input)));
+    uint16_t *change2 = change_msg_type((uint16_t *) 4, (uint16_t) encode_msgS(1, input));
 
     int i = 0;
     for(i = 0; i < MAX_LEN+2;i++){

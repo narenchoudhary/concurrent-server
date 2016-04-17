@@ -12,13 +12,13 @@
 
 #define MAX_LEN 16 /*max text line length*/
 
-uint16_t * encode_msg(uint16_t type, char *input);
-char *decode_msg(uint16_t *encoded_msg);
-void connection_handler(char *address, uint16_t port);
-void udp_handler(char *address, uint16_t port);
-int main2(int argc, char **argv);
+uint16_t * encode_msgC(uint16_t type, char *input);
+char *decode_msgC(uint16_t *encoded_msg);
+void tcp_handlerC(char *address, uint16_t port);
+void udp_handlerC(char *address, uint16_t port);
+int main2C(int argc, char **argv);
 
-uint16_t * encode_msg(uint16_t type, char *input) {
+uint16_t * encode_msgC(uint16_t type, char *input) {
 
     uint16_t *msg_full = (uint16_t *) malloc(sizeof(uint16_t) * (MAX_LEN + 2));
 
@@ -62,7 +62,7 @@ uint16_t * encode_msg(uint16_t type, char *input) {
     return msg_full;
 }
 
-char *decode_msg(uint16_t *encoded_msg) {
+char *decode_msgC(uint16_t *encoded_msg) {
     char *ret_str = malloc(sizeof(char) * MAX_LEN);
 
     int i = 0;
@@ -96,17 +96,18 @@ char *decode_msg(uint16_t *encoded_msg) {
     return ret_str;
 }
 
-void connection_handler(char *address, uint16_t port) {
+void tcp_handlerC(char *address, uint16_t port) {
 
     int sock_fd;
     struct sockaddr_in servaddr;
 
     char input[MAX_LEN];
+    /* received message is encoded as an array of uint_16 */
     uint16_t output[MAX_LEN+2];
 
-    if ((sock_fd = socket (AF_INET, SOCK_STREAM, 0)) <0) {
+    if ((sock_fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Problem in creating the socket");
-        exit(2);
+        exit(EXIT_FAILURE);
     }
 
     memset(&servaddr, 0, sizeof(servaddr));
@@ -114,10 +115,13 @@ void connection_handler(char *address, uint16_t port) {
     servaddr.sin_addr.s_addr= inet_addr(address);
     servaddr.sin_port =  htons(port);
 
-    if (connect(sock_fd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0) {
+    if (connect(sock_fd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
         perror("Problem in connecting to the server");
-        exit(3);
+        exit(EXIT_FAILURE);
     }
+
+    printf("Send \"getport\" to get a UDP port from server.\n");
+    printf("Once UDP Connection is established, send \"quitudp\" to quit udp transmission.\n");
 
     while (1) {
 
@@ -125,7 +129,7 @@ void connection_handler(char *address, uint16_t port) {
         fgets(input, MAX_LEN, stdin);
         input[strcspn(input, "\n")] = 0;
 
-        uint16_t *encoded_msg = encode_msg(1, input);
+        uint16_t *encoded_msg = encode_msgC(1, input);
 
         int i = 0;
         /*
@@ -140,7 +144,7 @@ void connection_handler(char *address, uint16_t port) {
         ssize_t bytes_sent = send(sock_fd, encoded_msg, input_size, 0);
         if(bytes_sent < 0){
             perror("send");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         //printf("Bytes sent:%zu\n",bytes_sent);
         //printf("Sending over\n");
@@ -156,11 +160,11 @@ void connection_handler(char *address, uint16_t port) {
             printf("\n");
             */
 
-            char *decoded_resp = decode_msg(output);
+            char *decoded_resp = decode_msgC(output);
             if(strcmp(input, "getport") == 0){
                 printf("Port returned by server is: %u\n", atoi(decoded_resp));
                 close(sock_fd);
-                udp_handler(address, atoi(decoded_resp));
+                udp_handlerC(address, atoi(decoded_resp));
                 printf("Connection closed.\n");
                 break;
             }else{
@@ -170,19 +174,19 @@ void connection_handler(char *address, uint16_t port) {
         }
         else if(bytes_received < 0){
             perror("read");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         else if (bytes_received == 0){
-            perror("The server terminated prematurely");
+            printf("The server terminated prematurely");
             close(sock_fd);
-            exit(4);
+            exit(EXIT_FAILURE);
         }
     }
 
     return;
 }
 
-void udp_handler(char *address, uint16_t port){
+void udp_handlerC(char *address, uint16_t port){
 
     int sock_fd;
     struct sockaddr_in servaddr;
@@ -193,7 +197,7 @@ void udp_handler(char *address, uint16_t port){
 
     if ((sock_fd = socket (AF_INET, SOCK_DGRAM, 0)) <0 ) {
         perror("Problem in creating the socket");
-        exit(2);
+        exit(EXIT_FAILURE);
     }
 
     servaddr.sin_family = AF_INET;
@@ -207,10 +211,10 @@ void udp_handler(char *address, uint16_t port){
         fgets(input, MAX_LEN, stdin);
         input[strcspn(input, "\n")] = 0;
 
-        uint16_t *encoded_msg = encode_msg(3, input);
+        uint16_t *encoded_msg = encode_msgC(3, input);
 
-        int i = 0;
         /*
+        int i = 0;
         printf("Encoded message is:");
         for(i = 0; i < MAX_LEN+2; i++){
             printf("%u", encoded_msg[i]);
@@ -227,11 +231,13 @@ void udp_handler(char *address, uint16_t port){
             //printf("Bytes sent:%zu\n",bytes_sent);
         }else if(bytes_sent < 0){
             perror("sendto");
-            exit(0);
+            exit(EXIT_FAILURE);
         }else if(bytes_sent == 0){
-            printf("connection closed by server");
+            printf("Zero bytes sent.\n");
+            printf("It is probably because client closed the connection prematurely.\n");
+            printf("Connection closed by server.\n");
             close(sock_fd);
-            break;
+            exit(EXIT_SUCCESS);
         }
 
         socklen_t size_of = sizeof(struct sockaddr);
@@ -246,17 +252,17 @@ void udp_handler(char *address, uint16_t port){
             }
             printf("\n");
              */
-            char *decoded_msg = decode_msg(output);
+            char *decoded_msg = decode_msgC(output);
             printf("Message received from server is:%s\n", decoded_msg);
         }
         else if(bytes_received < 0){
             perror("read");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         else if (bytes_received == 0){
             perror("The server probably has closed. No comunication possible.");
             close(sock_fd);
-            exit(4);
+            exit(EXIT_FAILURE);
         }
 
         if(strcmp(input, "quitudp") == 0){
@@ -274,14 +280,14 @@ int main(int argc, char **argv) {
       exit(1);
     }
 
-    connection_handler(argv[1], (uint16_t)(atoi(argv[2])));
+    tcp_handlerC(argv[1], (uint16_t)(atoi(argv[2])));
 //    udp_handler(argv[1], (uint16_t)(atoi(argv[2])));
 
     printf("Client program has closed.\n");
     exit(0);
 }
 
-int main2(int argc, char **argv){
+int main2C(int argc, char **argv){
 
     char input[MAX_LEN];
 
@@ -289,7 +295,7 @@ int main2(int argc, char **argv){
     input[strcspn(input, "\n")] = 0;
     printf("String entered is:%s\n",input);
 
-    char *in_clone = decode_msg(encode_msg(1, input));
+    char *in_clone = decode_msgC(encode_msgC(1, input));
 
     printf("Original string is:%s\n", in_clone);
 
