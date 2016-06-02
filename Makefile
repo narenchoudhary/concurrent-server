@@ -3,5 +3,5 @@ all: server client
 server: server.c
 	gcc -o server server.c
 
-client: echoClient.c
-	gcc -o client echoClient.c
+client: client.c
+	gcc -o client client.c
